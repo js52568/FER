@@ -1,0 +1,45 @@
+from sklearn.preprocessing import PolynomialFeatures as PolyFeat
+from sklearn.metrics import log_loss
+
+def cross_entropy_loss(h_x, y):
+    return -y * log(h_x) - (1 - y) * log(1 - h_x)
+
+def lr_h(x, w):
+    Phi = PolyFeat(1).fit_transform(x.reshape(1,-1))
+    return sigm(Phi.dot(w),1)
+def lr_train(X, y, eta = 0.01, max_iter = 2000, alpha = 0, epsilon = 0.0001, trace= False):
+    w_tilda = zeros(shape(X)[1] + 1) # [w0, w1, w2]
+    N = len(X) #broj primjera
+    w_trace = [];
+    err_init = epsilon**-1
+    
+    for i in range(0, max_iter):
+        dw0 = 0; dw = zeros(shape(X)[1]);
+        err = 0
+        
+        for j in range(0, N):
+            h = lr_h(X[j], w_tilda)
+            dw0 += h - y[j]
+            dw += (h - y[j])*X[j]
+            
+            err += cross_entropy_loss(h, y[j])
+        #err /= N
+        if abs(err_init - err) < epsilon: 
+            break
+        
+        else: err_init = err
+            
+        w_tilda[0] -= eta*dw0
+        w_tilda[1:] = w_tilda[1:] * (1-eta*alpha) - eta*dw
+        
+        w_trace.extend(w_tilda)
+        
+    if trace:
+        return w_tilda, w_trace
+        
+    else: return w_tilda
+
+
+def cross_entropy_error(X, y, w):
+    Phi = PolyFeat(1).fit_transform(X)
+    return log_loss(y, sigm(Phi.dot(w),1))

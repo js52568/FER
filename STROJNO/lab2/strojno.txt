@@ -1,0 +1,38 @@
+from sklearn.metrics import log_loss
+from sklearn.preprocessing import PolynomialFeatures
+
+def lr_h(x,w,alpha):
+    poly = PolynomialFeatures(1).fit_transform(x.reshape(1,-1))
+    return sigm(poly.dot(w),alpha)
+
+def cross_entropy_error(X, y, w,alpha):
+    poly = PolynomialFeatures(1).fit_transform(X)
+    return log_loss(y, sigm(poly.dot(w),alpha))
+
+def lr_train(X, y, eta=0.01, max_iter=2000, alpha=0, epsilon=0.0001, trace=False):
+    # Vaš kôd ovdje
+    w = zeros(shape(X)[1] + 1) #promijeni
+    i = 0
+    tracew = []
+    eps_error = epsilon**-1
+    error = 0
+    while (i<max_iter and abs(eps_error - error) >= epsilon):
+        deltaw0 = 0
+        deltaw = zeros(shape(X)[1])
+        error = 0
+        for j in range(len(X)):
+            h = lr_h(X[j],w,alpha)
+            deltaw0 += h - y[j]
+            deltaw += (h - y[j])*X[j]
+            error += -y * log(h) - (1 - y) * log(1 - h)
+        if abs(eps_error - error) < epsilon: 
+            break
+        else: eps_error = error
+        w[0] -= eta*deltaw0
+        w[1:] = w[1:] * (1-eta*alpha) - eta*deltaw
+        tracew.extend(w)
+        i = i+1
+    if trace:
+        return w,tracew
+    else:
+        return w
